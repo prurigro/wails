@@ -19,6 +19,8 @@ func AddModuleCommand(app *clir.Cli, parent *clir.Command, w io.Writer) error {
 	command := parent.NewSubCommand("module", "Generate wailsjs modules")
 	var tags string
 	command.StringFlag("tags", "tags to pass to Go compiler (quoted and space separated)", &tags)
+	projectConfigDir := ""
+	command.StringFlag("config", "Specify a different wails.json config directory", &projectConfigDir)
 
 	command.Action(func() error {
 
@@ -35,6 +37,10 @@ func AddModuleCommand(app *clir.Cli, parent *clir.Command, w io.Writer) error {
 			return err
 		}
 
+		if projectConfigDir == "" {
+			projectConfigDir = cwd
+		}
+
 		tagList := internal.ParseUserTags(tags)
 		tagList = append(tagList, "bindings")
 
@@ -43,7 +49,7 @@ func AddModuleCommand(app *clir.Cli, parent *clir.Command, w io.Writer) error {
 			return fmt.Errorf("%s\n%s\n%s", stdout, stderr, err)
 		}
 
-		stdout, stderr, err = shell.RunCommand(cwd, filename)
+		stdout, stderr, err = shell.RunCommand(cwd, filename, "-config", projectConfigDir)
 		println(stdout)
 		println(stderr)
 		if err != nil {

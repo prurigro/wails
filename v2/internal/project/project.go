@@ -129,7 +129,7 @@ type Info struct {
 	Comments       *string `json:"comments"`
 }
 
-// Load the project from the current working directory
+// Load the project from the given directory
 func Load(projectPath string) (*Project, error) {
 
 	// Attempt to load project.json

@@ -4,6 +4,7 @@
 package appng
 
 import (
+	"flag"
 	"os"
 	"path/filepath"
 
@@ -28,7 +29,11 @@ func (a *App) Run() error {
 	bindingExemptions := []interface{}{a.appoptions.OnStartup, a.appoptions.OnShutdown, a.appoptions.OnDomReady}
 	appBindings := binding.NewBindings(a.logger, a.appoptions.Bind, bindingExemptions)
 
-	err := generateBindings(appBindings)
+	var configDir string
+	flag.StringVar(&configDir, "config", "", "Path to Wails config file")
+	flag.Parse()
+
+	err := generateBindings(configDir, appBindings)
 	if err != nil {
 		return err
 	}
@@ -52,13 +57,18 @@ func CreateApp(appoptions *options.App) (*App, error) {
 
 }
 
-func generateBindings(bindings *binding.Bindings) error {
+func generateBindings(configDir string, bindings *binding.Bindings) error {
 
 	cwd, err := os.Getwd()
 	if err != nil {
 		return err
 	}
-	projectConfig, err := project.Load(cwd)
+
+	if configDir == "" {
+		configDir = cwd
+	}
+
+	projectConfig, err := project.Load(configDir)
 	if err != nil {
 		return err
 	}

@@ -73,6 +73,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	var devServerFlag *string
 	var frontendDevServerURLFlag *string
 	var loglevelFlag *string
+	var configDir string
 
 	assetdir := os.Getenv("assetdir")
 	if assetdir == "" {
@@ -82,6 +83,11 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	devServer := os.Getenv("devserver")
 	if devServer == "" {
 		devServerFlag = devFlags.String("devserver", "", "Address to bind the wails dev server to")
+	}
+
+	configDir = os.Getenv("configdir")
+	if configDir == "" {
+		devFlags.StringVar(&configDir, "config", "", "Directory of wails.json config file")
 	}
 
 	frontendDevServerURL := os.Getenv("frontenddevserverurl")
@@ -188,7 +194,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	bindingExemptions := []interface{}{appoptions.OnStartup, appoptions.OnShutdown, appoptions.OnDomReady}
 	appBindings := binding.NewBindings(myLogger, appoptions.Bind, bindingExemptions)
 
-	err = generateBindings(appBindings)
+	err = generateBindings(configDir, appBindings)
 	if err != nil {
 		return nil, err
 	}
@@ -218,13 +224,18 @@ func CreateApp(appoptions *options.App) (*App, error) {
 
 }
 
-func generateBindings(bindings *binding.Bindings) error {
+func generateBindings(configDir string, bindings *binding.Bindings) error {
 
 	cwd, err := os.Getwd()
 	if err != nil {
 		return err
 	}
-	projectConfig, err := project.Load(cwd)
+
+	if configDir == "" {
+		configDir = cwd
+	}
+
+	projectConfig, err := project.Load(configDir)
 	if err != nil {
 		return err
 	}

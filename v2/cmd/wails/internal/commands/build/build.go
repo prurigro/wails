@@ -49,6 +49,9 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 	compressFlags := ""
 	command.StringFlag("upxflags", "Flags to pass to upx", &compressFlags)
 
+	configDir := ""
+	command.StringFlag("config", "Specify a different wails.json config directory", &configDir)
+
 	defaultPlatform := os.Getenv("GOOS")
 	if defaultPlatform == "" {
 		defaultPlatform = runtime.GOOS
@@ -197,6 +200,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			TrimPath:            trimpath,
 			RaceDetector:        raceDetector,
 			WindowsConsole:      windowsConsole,
+			ConfigDir:           configDir,
 		}
 
 		// Start a new tabwriter
@@ -234,9 +238,14 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 		if err != nil {
 			return err
 		}
-		projectOptions, err := project.Load(cwd)
+
+		if configDir == "" {
+			configDir = cwd
+		}
+
+		projectOptions, err := project.Load(configDir)
 		if err != nil {
-			return err
+			return fmt.Errorf("unable to load project config from '%s': %s", configDir, err)
 		}
 
 		// Check platform

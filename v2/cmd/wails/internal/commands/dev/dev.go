@@ -91,6 +91,7 @@ type devFlags struct {
 
 	frontendDevServerURL string
 	skipFrontend         bool
+	configDir            string
 }
 
 // AddSubcommand adds the `dev` command for the Wails application
@@ -119,6 +120,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	command.BoolFlag("save", "Save given flags as defaults", &flags.saveConfig)
 	command.BoolFlag("race", "Build with Go's race detector", &flags.raceDetector)
 	command.BoolFlag("s", "Skips building the frontend", &flags.skipFrontend)
+	command.StringFlag("config", "Specify a different wails.json config directory", &flags.configDir)
 
 	command.Action(func() error {
 		// Create logger
@@ -138,7 +140,11 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			return err
 		}
 
-		projectConfig, err := loadAndMergeProjectConfig(cwd, &flags)
+		if flags.configDir == "" {
+			flags.configDir = cwd
+		}
+
+		projectConfig, err := loadAndMergeProjectConfig(&flags)
 		if err != nil {
 			return err
 		}
@@ -358,6 +364,7 @@ func generateBuildOptions(flags devFlags) *build.Options {
 		Verbosity:      flags.verbosity,
 		WailsJSDir:     flags.wailsjsdir,
 		RaceDetector:   flags.raceDetector,
+		ConfigDir:      flags.configDir,
 	}
 
 	return result
@@ -365,8 +372,8 @@ func generateBuildOptions(flags devFlags) *build.Options {
 
 // loadAndMergeProjectConfig reconciles flags passed to the CLI with project config settings and updates
 // the project config if necessary
-func loadAndMergeProjectConfig(cwd string, flags *devFlags) (*project.Project, error) {
-	projectConfig, err := project.Load(cwd)
+func loadAndMergeProjectConfig(flags *devFlags) (*project.Project, error) {
+	projectConfig, err := project.Load(flags.configDir)
 	if err != nil {
 		return nil, err
 	}
@@ -576,6 +583,7 @@ func restartApp(buildOptions *build.Options, debugBinaryProcess *process.Process
 	os.Setenv("assetdir", flags.assetDir)
 	os.Setenv("devserver", flags.devServer)
 	os.Setenv("frontenddevserverurl", flags.frontendDevServerURL)
+	os.Setenv("configdir", flags.configDir)
 
 	// Start up new binary with correct args
 	newProcess := process.NewProcess(appBinary, args...)

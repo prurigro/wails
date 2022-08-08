@@ -59,6 +59,7 @@ type Options struct {
 	TrimPath            bool                 // Use Go's trimpath compiler flag
 	RaceDetector        bool                 // Build with Go's race detector
 	WindowsConsole      bool                 // Indicates that the windows console should be kept
+	ConfigDir           string               // Indicates where the project config resides
 }
 
 // Build the project!
@@ -74,7 +75,7 @@ func Build(options *Options) (string, error) {
 	}
 
 	// Load project
-	projectData, err := project.Load(cwd)
+	projectData, err := project.Load(options.ConfigDir)
 	if err != nil {
 		return "", err
 	}
