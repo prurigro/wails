@@ -20,6 +20,7 @@ func TestBindings_GenerateModels(t *testing.T) {
 
 	tests := []BindingTest{
 		SingleFieldTest,
+		NestedFieldTest,
 	}
 
 	testLogger := &logger.Logger{}
@@ -36,7 +37,7 @@ func TestBindings_GenerateModels(t *testing.T) {
 				return
 			}
 			if !reflect.DeepEqual(strings.Fields(string(got)), strings.Fields(tt.want)) {
-				t.Errorf("GenerateModels() got = %v, want %v", strings.Fields(string(got)), strings.Fields(tt.want))
+				t.Errorf("GenerateModels() got = %v, want %v", string(got), tt.want)
 			}
 		})
 	}
