@@ -86,7 +86,7 @@ make this easy for you by handling project creation, compilation and bundling. A
 ### Official Website
 
 Version 2:
-
+   
 Wails v2 has been released in Beta for all 3 platforms. Check out the [new website](https://wails.io) if you are
 interested in trying it out.
 
